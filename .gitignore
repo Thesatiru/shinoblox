@@ -1,0 +1,19 @@
+   # Arquivos de place e modelos gerados pelo Studio
+   *.rbxl
+   *.rbxlx
+   *.rbxm
+   *.rbxmx
+   *.lock
+
+   # Gerados por ferramentas
+   sourcemap.json
+   Packages/
+   ServerPackages/
+   DevPackages/
+
+   # Sistema e editor
+   .DS_Store
+   Thumbs.db
+   .vscode/*
+   !.vscode/extensions.json
+   !.vscode/settings.json
