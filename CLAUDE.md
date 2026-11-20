@@ -82,7 +82,7 @@ Documento completo: https://docs.google.com/document/d/1ylGZkkyNhz4GtF3LLCSIRGOg
 
 ## Arquitetura do núcleo de combate
 
-> Status: **arquitetura e nomes aprovados.** Os módulos ainda não foram escritos, a menos que já estejam no repositório.
+> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`. Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
 
 Convenção de nomes dos módulos: sufixo `Service` para módulos do servidor que existem uma vez só e guardam estado; `Controller` para o equivalente no cliente; sem sufixo para dados, tipos e utilitários. São ModuleScripts comuns carregados com `require`, não serviços do Roblox (`game:GetService`).
 
@@ -125,7 +125,7 @@ Detalhes que já estão combinados:
 - Debug enquanto não há animações: hitbox como bloco transparente e cor do personagem por estado, atrás de uma flag na configuração.
 - No futuro, as animações terão Animation Events no quadro do impacto para conferir a sincronia e serão publicadas na comunidade The Ratworks; o código usará os IDs.
 
-Ordem de implementação: tipos, config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e applyHit → ataque com os 3 primeiros M1s → finalizadores → combo aéreo e cravada → anti-infinito e boneco atacando.
+Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
 
 ## Decisões em aberto
 
