@@ -37,7 +37,9 @@ export type MotionConfig = {
 	launchDuration: number,
 	slamDownSpeed: number,
 	slamDuration: number,
-	knockdownDuration: number, -- tempo caído depois de empurrão, arremesso ou cravada
+	knockdownDuration: number, -- tempo caído depois de empurrão, arremesso, cravada ou queda do combo aéreo
+	groundCheckMargin: number, -- folga do raio para baixo que detecta o chão
+	minAirTime: number, -- no ar, só procura o chão depois deste tempo (evita "pousar" na decolagem)
 }
 
 export type FollowConfig = {
@@ -265,6 +267,8 @@ local CombatConfig: Config = {
 		slamDownSpeed = 80, -- PLAYTEST
 		slamDuration = 0.25, -- PLAYTEST
 		knockdownDuration = 1.0, -- PLAYTEST
+		groundCheckMargin = 0.5,
+		minAirTime = 0.1,
 	},
 
 	FOLLOW = {

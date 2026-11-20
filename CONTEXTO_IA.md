@@ -28,6 +28,10 @@
   - Exemplo: `M1 → M1 → lançador → M1 no ar → finalizador aéreo`.
 - **Combo aéreo:** depois do lançador o alvo sobe sozinho. **Seguir é manual e opcional:** um novo aperto de Espaço, olhando para o alvo, leva o atacante até ele. Só quem lançou pode seguir (aliados no futuro), a janela é de **2 s** e a mira é generosa (uns dois personagens, ~8 studs, para cada lado). Não seguir também é válido, para no futuro usar uma habilidade de longe. No ar, atacante e alvo ficam **suspensos** e o combo continua com os M1s que sobraram. Último golpe aéreo: **Espaço segurado = arremesso para longe; Espaço solto antes do último M1 = cravada no chão**.
 - **Anti-infinito:** gravidade crescente no ar, dano decrescente ao longo do combo, invulnerabilidade curta ao levantar do chão.
+  - O combo da vítima (escala de dano) recomeça quando ela leva um golpe estando livre (fora de atordoado e caído).
+  - A vítima lançada fica atordoada até pousar; se o combo aéreo acaba sem finalizador, ela cai no chão (`Knockdown`).
+  - Caída, a vítima fica invulnerável durante a queda e um pouco depois de levantar.
+  - No ar, cada golpe zera a queda (suspensão); o atacante que seguiu usa a mesma gravidade do alvo e os dois caem juntos.
 - **Leitura (estilo Hades):** todo golpe tem preparação, impacto e recuperação visíveis. Nenhum golpe pode ser impossível de reagir.
 
 ### Próximas etapas (não implementar agora; a Etapa 1 é só M1)
@@ -108,7 +112,7 @@ Convenção de nomes dos módulos: `Service` no servidor, `Controller` no client
 | `src/client/Combat/InputController.luau` | Lê o input e envia as intenções |
 | `src/client/Combat/DebugController.luau` | Cor do personagem conforme o estado |
 
-**Status:** prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo). Os outros arquivos existem só com `--!strict` e ainda não foram escritos. Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
+**Status:** prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo), `ComboTracker`, `MotionService`, `HitService`. Os outros arquivos existem só com `--!strict` e ainda não foram escritos. Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
 
 Enquanto não há animações, o debug mostra a hitbox como bloco transparente e pinta o personagem conforme o estado. No futuro, as animações terão Animation Events no quadro do impacto, só para conferir a sincronia.
 

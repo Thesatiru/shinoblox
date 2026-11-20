@@ -82,7 +82,7 @@ Documento completo: https://docs.google.com/document/d/1ylGZkkyNhz4GtF3LLCSIRGOg
 
 ## Arquitetura do núcleo de combate
 
-> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo). Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
+> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo), `ComboTracker`, `MotionService`, `HitService`. Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
 
 Convenção de nomes dos módulos: sufixo `Service` para módulos do servidor que existem uma vez só e guardam estado; `Controller` para o equivalente no cliente; sem sufixo para dados, tipos e utilitários. São ModuleScripts comuns carregados com `require`, não serviços do Roblox (`game:GetService`).
 
@@ -125,6 +125,10 @@ Detalhes que já estão combinados:
 - Todo personagem registrado no `StateService` recebe a tag `CombatCharacter` (CollectionService); o cliente usa a tag para achar quem pintar. Os nomes da tag e do atributo ficam no `CombatTypes`.
 - Hitbox: procura alvos a cada quadro durante a fase `active` do golpe; cada alvo é atingido no máximo uma vez por golpe.
 - Boneco de treino: R15 gerado por código (`CreateHumanoidModelFromDescription`), física do servidor (`SetNetworkOwner(nil)`), nunca morre (vida volta ao máximo depois de um tempo) e mostra o dano total do combo atual. Posições e tempos em `CombatConfig.DUMMY`.
+- Combo da vítima (escala de dano): recomeça quando ela leva um golpe estando livre, ou seja, fora de `Stunned` e `Knockdown`.
+- Vítima lançada fica `Stunned` até pousar. Se o combo aéreo acaba sem finalizador, ela cai em `Knockdown`.
+- `Knockdown` (depois de empurrão, arremesso, cravada ou queda do combo aéreo): a vítima fica invulnerável durante a queda e por `getUpInvulnerability` depois de levantar.
+- No ar, o servidor controla a velocidade vertical com o `LinearVelocity`: a queda acelera conforme a gravidade crescente, e cada golpe aéreo zera a queda (suspensão). O atacante que seguiu usa a mesma gravidade do alvo, então os dois caem juntos.
 - Se o personagem está no ar é decidido pelo servidor, pelo estado; o cliente não informa.
 - `applyHit` terá um ponto único e marcado onde bloqueio, parry e postura entram depois.
 - Movimento forçado da vítima: o servidor insere um `LinearVelocity` no personagem (a física do personagem é simulada pelo cliente dono).
