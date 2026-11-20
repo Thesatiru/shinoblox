@@ -8,6 +8,7 @@ local CombatTypes = require(script.Parent.CombatTypes)
 type AttackData = CombatTypes.AttackData
 type AttackDirection = CombatTypes.AttackDirection
 type CharacterState = CombatTypes.CharacterState
+type DummyMode = CombatTypes.DummyMode
 
 -- Tipos de cada seção ----------------------------------------------------------
 
@@ -15,7 +16,6 @@ export type ComboConfig = {
 	maxHits: number, -- contagem única: chão + ar
 	resetTime: number, -- sem M1 por este tempo, o combo volta ao 1º golpe
 	launcherHits: { [number]: boolean }, -- posições da contagem em que o lançador vale
-	moveSpeedMultiplier: number, -- velocidade do atacante enquanto está em Attacking
 }
 
 export type AttackTable = {
@@ -70,17 +70,38 @@ export type DebugConfig = {
 	hitboxTransparency: number,
 	hitboxLifetime: number, -- quanto tempo o bloco da hitbox fica visível
 	colorByState: boolean,
+	stateFillTransparency: number, -- transparência do preenchimento do Highlight de estado
 	stateColors: { [CharacterState]: Color3 },
 	printValidationFailures: boolean, -- avisa no Output quando o servidor recusa um pedido
 }
 
+-- Como cada estado afeta o movimento do personagem. Aplicado pelo StateService.
+export type StateMovement = {
+	speedMultiplier: number, -- fração da WalkSpeed original do personagem
+	canJump: boolean,
+}
+
+export type DummySpawn = {
+	cframe: CFrame, -- posição e para onde o boneco olha
+	mode: DummyMode,
+}
+
+export type DummyConfig = {
+	spawns: { DummySpawn },
+	minHealth: number, -- a vida nunca fica abaixo disto: o boneco não morre
+	healthResetDelay: number, -- sem levar golpe por este tempo, a vida volta ao máximo
+	comboDisplayResetTime: number, -- sem levar golpe por este tempo, o dano do combo mostrado zera
+}
+
 export type Config = {
 	COMBO: ComboConfig,
+	STATE_MOVEMENT: { [CharacterState]: StateMovement },
 	ATTACKS: AttackTable,
 	MOTION: MotionConfig,
 	FOLLOW: FollowConfig,
 	ANTI_INFINITE: AntiInfiniteConfig,
 	VALIDATION: ValidationConfig,
+	DUMMY: DummyConfig,
 	DEBUG: DebugConfig,
 }
 
@@ -95,7 +116,17 @@ local CombatConfig: Config = {
 		maxHits = 5,
 		resetTime = 2, -- PLAYTEST
 		launcherHits = { [2] = true, [3] = true, [4] = true },
-		moveSpeedMultiplier = 0.6, -- PLAYTEST
+	},
+
+	STATE_MOVEMENT = {
+		Idle = { speedMultiplier = 1, canJump = true },
+		-- O atacante pode se mover durante os M1s.
+		-- canJump fica true por enquanto: se o Espaço segurado atrapalha o lançador ainda é decisão em aberto.
+		Attacking = { speedMultiplier = 0.6, canJump = true }, -- PLAYTEST
+		Blocking = { speedMultiplier = 1, canJump = true }, -- definir na etapa de postura; não usado na Etapa 1
+		Stunned = { speedMultiplier = 0, canJump = false },
+		Airborne = { speedMultiplier = 0, canJump = false }, -- no ar quem move é o MotionService
+		Knockdown = { speedMultiplier = 0, canJump = false },
 	},
 
 	-- Regra para o combo ser "verdadeiro": stunDuration de um golpe > recovery dele + windup do próximo.
@@ -259,6 +290,17 @@ local CombatConfig: Config = {
 		followDistanceTolerance = 4,
 	},
 
+	DUMMY = {
+		-- O chão (Baseplate) fica em Y = 0; Y = 3 põe o centro do R15 em pé. Todos olham para a origem.
+		spawns = {
+			{ cframe = CFrame.lookAt(Vector3.new(-8, 3, -15), Vector3.new(0, 3, 0)), mode = "Passive" },
+			{ cframe = CFrame.lookAt(Vector3.new(8, 3, -15), Vector3.new(0, 3, 0)), mode = "Passive" },
+		},
+		minHealth = 1,
+		healthResetDelay = 3, -- PLAYTEST
+		comboDisplayResetTime = 2, -- PLAYTEST
+	},
+
 	DEBUG = {
 		enabled = true, -- desligar antes de publicar
 		showHitboxes = true,
@@ -266,6 +308,7 @@ local CombatConfig: Config = {
 		hitboxTransparency = 0.7,
 		hitboxLifetime = 0.15,
 		colorByState = true,
+		stateFillTransparency = 0.5,
 		stateColors = {
 			Idle = Color3.fromRGB(255, 255, 255),
 			Attacking = Color3.fromRGB(255, 220, 0),

@@ -6,6 +6,9 @@ export type CharacterState = "Idle" | "Attacking" | "Blocking" | "Stunned" | "Ai
 -- Direção segurada no golpe. Só faz diferença no finalizador do chão.
 export type AttackDirection = "Neutral" | "Forward"
 
+-- Modos do boneco de treino. Blocking só entra junto com a etapa de postura.
+export type DummyMode = "Passive" | "Attacking" | "Blocking"
+
 -- Intenções que o cliente pode enviar ao servidor.
 export type CombatAction = "M1" | "Follow"
 
@@ -55,6 +58,10 @@ local VALID_ACTIONS: { [string]: boolean } = {
 }
 
 local CombatTypes = {}
+
+-- Nomes usados pelos dois lados. O servidor grava; o cliente lê.
+CombatTypes.STATE_ATTRIBUTE = "CombatState" -- atributo do Model com o CharacterState atual
+CombatTypes.CHARACTER_TAG = "CombatCharacter" -- tag do CollectionService em todo personagem registrado
 
 function CombatTypes.isCharacterState(value: unknown): boolean
 	return typeof(value) == "string" and VALID_STATES[value] == true

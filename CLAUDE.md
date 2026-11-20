@@ -82,7 +82,7 @@ Documento completo: https://docs.google.com/document/d/1ylGZkkyNhz4GtF3LLCSIRGOg
 
 ## Arquitetura do núcleo de combate
 
-> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`. Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
+> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo). Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
 
 Convenção de nomes dos módulos: sufixo `Service` para módulos do servidor que existem uma vez só e guardam estado; `Controller` para o equivalente no cliente; sem sufixo para dados, tipos e utilitários. São ModuleScripts comuns carregados com `require`, não serviços do Roblox (`game:GetService`).
 
@@ -119,6 +119,12 @@ Fluxo de um M1: cliente envia `("M1", direction, jumpHeld)` → `InputHandler` v
 
 Detalhes que já estão combinados:
 
+- Um único RemoteEvent, `CombatIntent`, criado pelo servidor em `ReplicatedStorage.Remotes` (fora da pasta `Shared` do Rojo). A ação vai no 1º argumento: `("M1", direction, jumpHeld)` ou `("Follow")`.
+- O `StateService` também ajusta `WalkSpeed` e pulo a cada troca de estado, pela tabela `STATE_MOVEMENT` da config. `Stunned`, `Airborne` e `Knockdown` travam o personagem (sem andar e sem pular).
+- A vítima lançada fica `Stunned` no ar; `Airborne` é só para quem pode atacar no ar (o atacante que seguiu).
+- Todo personagem registrado no `StateService` recebe a tag `CombatCharacter` (CollectionService); o cliente usa a tag para achar quem pintar. Os nomes da tag e do atributo ficam no `CombatTypes`.
+- Hitbox: procura alvos a cada quadro durante a fase `active` do golpe; cada alvo é atingido no máximo uma vez por golpe.
+- Boneco de treino: R15 gerado por código (`CreateHumanoidModelFromDescription`), física do servidor (`SetNetworkOwner(nil)`), nunca morre (vida volta ao máximo depois de um tempo) e mostra o dano total do combo atual. Posições e tempos em `CombatConfig.DUMMY`.
 - Se o personagem está no ar é decidido pelo servidor, pelo estado; o cliente não informa.
 - `applyHit` terá um ponto único e marcado onde bloqueio, parry e postura entram depois.
 - Movimento forçado da vítima: o servidor insere um `LinearVelocity` no personagem (a física do personagem é simulada pelo cliente dono).

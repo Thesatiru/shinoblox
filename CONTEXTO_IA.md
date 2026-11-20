@@ -38,7 +38,7 @@
 
 ### Bonecos de treino e pontos em aberto
 
-- **Bonecos de treino:** três modos: passivo (recebe combos), atacando (repete o combo de M1) e defendendo (entra junto com a etapa de postura).
+- **Bonecos de treino:** três modos: passivo (recebe combos), atacando (repete o combo de M1) e defendendo (entra junto com a etapa de postura). São R15 gerados por código, nunca morrem (a vida volta ao máximo depois de um tempo) e mostram o dano total do combo atual.
 - **Em aberto:** segurar Espaço no chão faz o personagem pular (padrão do Roblox); ver no protótipo se isso atrapalha o lançador.
 
 Documento completo: Design do combate corpo a corpo (link na seção Links).
@@ -83,10 +83,10 @@ Exemplo de require: `require(ReplicatedStorage.Shared.Combat.CombatConfig)`. O m
 
 O combate trabalha com **personagens (`Model` com `Humanoid`)**, nunca com `Player`, para que bonecos de treino e inimigos usem o mesmo código. `Player` só aparece onde o RemoteEvent é recebido e validado.
 
-- **Estados do personagem:** `Idle`, `Attacking`, `Blocking`, `Stunned`, `Airborne`, `Knockdown`, publicados como atributo `CombatState` no personagem.
+- **Estados do personagem:** `Idle`, `Attacking`, `Blocking`, `Stunned`, `Airborne`, `Knockdown`, publicados como atributo `CombatState` no personagem. O `StateService` ajusta velocidade e pulo a cada troca (`STATE_MOVEMENT` na config); atordoado, no ar ou caído, o personagem fica travado. A vítima lançada fica `Stunned` no ar; `Airborne` é só para quem pode atacar no ar (o atacante que seguiu). Todo personagem registrado recebe a tag `CombatCharacter`, que o cliente usa para achar quem pintar.
 - **Hitbox:** módulo que detecta e valida acertos no servidor.
 - **Aplicar golpe:** função única `HitService.applyHit(attacker, target, hitData)`. Nesta etapa trata dano, estado e movimento; tem um ponto marcado onde bloqueio, parry e postura entram depois.
-- **Intenções do cliente:** `M1` (com direção e se o Espaço está segurado) e `Follow` (seguir o alvo lançado).
+- **Intenções do cliente:** `M1` (com direção e se o Espaço está segurado) e `Follow` (seguir o alvo lançado), pelo único RemoteEvent `CombatIntent`, criado pelo servidor em `ReplicatedStorage.Remotes`.
 
 Convenção de nomes dos módulos: `Service` no servidor, `Controller` no cliente, sem sufixo para dados, tipos e utilitários. São ModuleScripts carregados com `require`, não serviços do Roblox.
 
@@ -108,7 +108,7 @@ Convenção de nomes dos módulos: `Service` no servidor, `Controller` no client
 | `src/client/Combat/InputController.luau` | Lê o input e envia as intenções |
 | `src/client/Combat/DebugController.luau` | Cor do personagem conforme o estado |
 
-**Status:** prontos: `CombatTypes`, `CombatConfig`. Os outros arquivos existem só com `--!strict` e ainda não foram escritos. Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
+**Status:** prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo). Os outros arquivos existem só com `--!strict` e ainda não foram escritos. Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
 
 Enquanto não há animações, o debug mostra a hitbox como bloco transparente e pinta o personagem conforme o estado. No futuro, as animações terão Animation Events no quadro do impacto, só para conferir a sincronia.
 
