@@ -7,9 +7,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CombatRemotes = require(ReplicatedStorage.Shared.Combat.CombatRemotes)
 local StateService = require(script.Parent.Combat.StateService)
 local TrainingDummy = require(script.Parent.Combat.TrainingDummy)
+local InputHandler = require(script.Parent.Combat.InputHandler)
 
 -- Cria o RemoteEvent já no início, para o cliente não ficar esperando.
 CombatRemotes.getIntentEvent()
+InputHandler.start()
 
 -- Criar o modelo do boneco espera o Roblox montar o personagem; task.spawn não trava o resto.
 task.spawn(TrainingDummy.spawnAll)

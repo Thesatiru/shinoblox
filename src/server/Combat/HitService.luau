@@ -17,7 +17,7 @@ local ANTI_INFINITE = CombatConfig.ANTI_INFINITE
 
 local HitService = {}
 
--- Caído: fica em Knockdown e invulnerável durante a queda e um pouco depois de levantar.
+-- Caído: fica em Knockdown e invulnerável a M1 durante a queda e um pouco depois de levantar.
 local function knockDown(target: Model)
 	StateService.setState(target, "Knockdown", MOTION.knockdownDuration)
 	ComboTracker.setInvulnerable(target, MOTION.knockdownDuration + ANTI_INFINITE.getUpInvulnerability)
@@ -40,7 +40,8 @@ function HitService.applyHit(attacker: Model, target: Model, hitData: HitData): 
 	if not humanoid or humanoid.Health <= 0 then
 		return false
 	end
-	if ComboTracker.isInvulnerable(target) then
+	-- A invulnerabilidade (caído e ao levantar) só protege contra M1: habilidades podem estender o combo.
+	if hitData.source == "M1" and ComboTracker.isInvulnerable(target) then
 		return false
 	end
 

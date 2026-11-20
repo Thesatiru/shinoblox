@@ -16,6 +16,7 @@ export type ComboConfig = {
 	maxHits: number, -- contagem única: chão + ar
 	resetTime: number, -- sem M1 por este tempo, o combo volta ao 1º golpe
 	launcherHits: { [number]: boolean }, -- posições da contagem em que o lançador vale
+	inputBufferWindow: number, -- M1 apertado nos últimos X s da recuperação fica guardado e sai em seguida
 }
 
 export type AttackTable = {
@@ -83,6 +84,14 @@ export type StateMovement = {
 	canJump: boolean,
 }
 
+-- Teclas e leitura de input no cliente.
+export type InputConfig = {
+	attackInput: Enum.UserInputType, -- M1
+	jumpKey: Enum.KeyCode, -- Espaço: segurado no M1 = lançador / arremesso aéreo; novo aperto = seguir
+	forwardKey: Enum.KeyCode, -- teclado: segurar = finalizador "Forward"
+	forwardMoveThreshold: number, -- controle/celular: quanto o andar precisa apontar para a frente (0 a 1)
+}
+
 export type DummySpawn = {
 	cframe: CFrame, -- posição e para onde o boneco olha
 	mode: DummyMode,
@@ -103,6 +112,7 @@ export type Config = {
 	FOLLOW: FollowConfig,
 	ANTI_INFINITE: AntiInfiniteConfig,
 	VALIDATION: ValidationConfig,
+	INPUT: InputConfig,
 	DUMMY: DummyConfig,
 	DEBUG: DebugConfig,
 }
@@ -118,6 +128,7 @@ local CombatConfig: Config = {
 		maxHits = 5,
 		resetTime = 2, -- PLAYTEST
 		launcherHits = { [2] = true, [3] = true, [4] = true },
+		inputBufferWindow = 0.2, -- PLAYTEST
 	},
 
 	STATE_MOVEMENT = {
@@ -292,6 +303,13 @@ local CombatConfig: Config = {
 		rateLimitWindow = 1,
 		maxRequestsPerWindow = 12, -- bem acima do que um humano aperta; serve só contra spam de exploit
 		followDistanceTolerance = 4,
+	},
+
+	INPUT = {
+		attackInput = Enum.UserInputType.MouseButton1,
+		jumpKey = Enum.KeyCode.Space,
+		forwardKey = Enum.KeyCode.W,
+		forwardMoveThreshold = 0.5, -- PLAYTEST
 	},
 
 	DUMMY = {

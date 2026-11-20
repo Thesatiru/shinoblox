@@ -28,9 +28,14 @@ export type AttackData = {
 	motion: MotionKind,
 }
 
+-- De onde vem o golpe. A invulnerabilidade de quem está caído só vale contra M1;
+-- habilidades (etapas futuras) acertam o alvo caído e servem de extensor de combo.
+export type HitSource = "M1" | "Skill"
+
 -- O que o HitService recebe para aplicar um golpe em um alvo.
 export type HitData = {
 	attackName: string,
+	source: HitSource,
 	damage: number, -- dano base, antes da escala do combo
 	stunDuration: number,
 	motion: MotionKind,
