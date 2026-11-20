@@ -82,7 +82,7 @@ Documento completo: https://docs.google.com/document/d/1ylGZkkyNhz4GtF3LLCSIRGOg
 
 ## Arquitetura do núcleo de combate
 
-> Status: **arquitetura e nomes aprovados.** Os módulos ainda não foram escritos, a menos que já estejam no repositório.
+> Status: **arquitetura e nomes aprovados.** Prontos: `CombatTypes`, `CombatConfig`, `CombatRemotes`, `StateService`, `Main.server`, `DebugController`, `Main.client`, `HitboxService`, `TrainingDummy` (só modo passivo), `ComboTracker`, `MotionService`, `HitService`, `AttackService`, `InputHandler`, `InputController`. Os demais arquivos existem só com `--!strict` e ainda não foram escritos.
 
 Convenção de nomes dos módulos: sufixo `Service` para módulos do servidor que existem uma vez só e guardam estado; `Controller` para o equivalente no cliente; sem sufixo para dados, tipos e utilitários. São ModuleScripts comuns carregados com `require`, não serviços do Roblox (`game:GetService`).
 
@@ -119,13 +119,27 @@ Fluxo de um M1: cliente envia `("M1", direction, jumpHeld)` → `InputHandler` v
 
 Detalhes que já estão combinados:
 
+- Um único RemoteEvent, `CombatIntent`, criado pelo servidor em `ReplicatedStorage.Remotes` (fora da pasta `Shared` do Rojo). A ação vai no 1º argumento: `("M1", direction, jumpHeld)` ou `("Follow")`.
+- O `StateService` também ajusta `WalkSpeed` e pulo a cada troca de estado, pela tabela `STATE_MOVEMENT` da config. `Stunned`, `Airborne` e `Knockdown` travam o personagem (sem andar e sem pular).
+- A vítima lançada fica `Stunned` no ar; `Airborne` é só para quem pode atacar no ar (o atacante que seguiu).
+- Todo personagem registrado no `StateService` recebe a tag `CombatCharacter` (CollectionService); o cliente usa a tag para achar quem pintar. Os nomes da tag e do atributo ficam no `CombatTypes`.
+- Hitbox: procura alvos a cada quadro durante a fase `active` do golpe; cada alvo é atingido no máximo uma vez por golpe.
+- Boneco de treino: R15 gerado por código (`CreateHumanoidModelFromDescription`), física do servidor (`SetNetworkOwner(nil)`), nunca morre (vida volta ao máximo depois de um tempo) e mostra o dano total do combo atual. Posições e tempos em `CombatConfig.DUMMY`.
+- Combo da vítima (escala de dano): recomeça quando ela leva um golpe estando livre, ou seja, fora de `Stunned` e `Knockdown`.
+- Vítima lançada fica `Stunned` até pousar. Se o combo aéreo acaba sem finalizador, ela cai em `Knockdown`.
+- `Knockdown` (depois de empurrão, arremesso, cravada ou queda do combo aéreo): a vítima fica invulnerável **a M1** durante a queda e por `getUpInvulnerability` depois de levantar. Habilidades (etapas futuras) ignoram essa invulnerabilidade, para servir de extensor de combo. Cada `HitData` informa `source` (`"M1"` ou `"Skill"`).
+- No ar, o servidor controla a velocidade vertical com o `LinearVelocity`: a queda acelera conforme a gravidade crescente, e cada golpe aéreo zera a queda (suspensão). O atacante que seguiu usa a mesma gravidade do alvo, então os dois caem juntos.
+- Buffer de input: um M1 apertado nos últimos `COMBO.inputBufferWindow` s da recuperação fica guardado e sai assim que o golpe atual termina.
+- Direção "Forward" do finalizador: no teclado, tecla W segurada; no controle e no celular, andando para a frente do personagem (`Humanoid.MoveDirection`). Por enquanto só o clique do mouse dispara o M1; os botões de controle e celular ainda não foram definidos.
+- O personagem **não** vira para a câmera ao atacar: o golpe sai para onde ele já está virado.
+- Golpe interrompido na preparação não conta na contagem. Seguir só é aceito com o atacante em `Idle` (depois da recuperação do lançador) e uma vez por lançamento.
 - Se o personagem está no ar é decidido pelo servidor, pelo estado; o cliente não informa.
 - `applyHit` terá um ponto único e marcado onde bloqueio, parry e postura entram depois.
 - Movimento forçado da vítima: o servidor insere um `LinearVelocity` no personagem (a física do personagem é simulada pelo cliente dono).
 - Debug enquanto não há animações: hitbox como bloco transparente e cor do personagem por estado, atrás de uma flag na configuração.
 - No futuro, as animações terão Animation Events no quadro do impacto para conferir a sincronia e serão publicadas na comunidade The Ratworks; o código usará os IDs.
 
-Ordem de implementação: tipos, config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e applyHit → ataque com os 3 primeiros M1s → finalizadores → combo aéreo e cravada → anti-infinito e boneco atacando.
+Ordem de implementação: config e remotes → estados e debug → hitbox e boneco passivo → movimento, combo tracker e `applyHit` → ataque com os M1s → lançador e seguir → combo aéreo e finalizadores → anti-infinito e boneco atacando.
 
 ## Decisões em aberto
 

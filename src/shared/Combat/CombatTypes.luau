@@ -6,6 +6,9 @@ export type CharacterState = "Idle" | "Attacking" | "Blocking" | "Stunned" | "Ai
 -- Direção segurada no golpe. Só faz diferença no finalizador do chão.
 export type AttackDirection = "Neutral" | "Forward"
 
+-- Modos do boneco de treino. Blocking só entra junto com a etapa de postura.
+export type DummyMode = "Passive" | "Attacking" | "Blocking"
+
 -- Intenções que o cliente pode enviar ao servidor.
 export type CombatAction = "M1" | "Follow"
 
@@ -25,9 +28,14 @@ export type AttackData = {
 	motion: MotionKind,
 }
 
+-- De onde vem o golpe. A invulnerabilidade de quem está caído só vale contra M1;
+-- habilidades (etapas futuras) acertam o alvo caído e servem de extensor de combo.
+export type HitSource = "M1" | "Skill"
+
 -- O que o HitService recebe para aplicar um golpe em um alvo.
 export type HitData = {
 	attackName: string,
+	source: HitSource,
 	damage: number, -- dano base, antes da escala do combo
 	stunDuration: number,
 	motion: MotionKind,
@@ -55,6 +63,10 @@ local VALID_ACTIONS: { [string]: boolean } = {
 }
 
 local CombatTypes = {}
+
+-- Nomes usados pelos dois lados. O servidor grava; o cliente lê.
+CombatTypes.STATE_ATTRIBUTE = "CombatState" -- atributo do Model com o CharacterState atual
+CombatTypes.CHARACTER_TAG = "CombatCharacter" -- tag do CollectionService em todo personagem registrado
 
 function CombatTypes.isCharacterState(value: unknown): boolean
 	return typeof(value) == "string" and VALID_STATES[value] == true
